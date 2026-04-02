@@ -17,6 +17,7 @@ app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/banners', require('./routes/bannerRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/contact', require('./routes/contactRoutes'));
+app.use('/api/forms', require('./routes/formRoutes'));
 
 app.get('/', (req, res) => {
     res.send('GS Sports Agencies Backend is running...');

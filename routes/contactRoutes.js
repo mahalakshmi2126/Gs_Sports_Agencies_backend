@@ -13,6 +13,7 @@ router.get('/', async (req, res) => {
                 address: "123 Sports Avenue, Gudiyattam, Tamil Nadu 632602",
                 phone: "+91 98765 43210",
                 email: "info@gsagencies.com",
+                hours: "Mon - Sat: 9:30 AM - 9:00 PM, Sun: 9:30 AM - 8:00 PM",
                 socialLinks: [
                     { platform: "whatsapp", url: "https://wa.me/919876543210", enabled: true },
                     { platform: "instagram", url: "https://instagram.com", enabled: true },
@@ -29,15 +30,16 @@ router.get('/', async (req, res) => {
 // Update contact info (Admin)
 router.put('/', protect, async (req, res) => {
     try {
-        const { address, phone, email, socialLinks } = req.body;
+        const { address, phone, email, hours, socialLinks } = req.body;
         let contactInfo = await Contact.findOne({});
 
         if (!contactInfo) {
-            contactInfo = new Contact({ address, phone, email, socialLinks });
+            contactInfo = new Contact({ address, phone, email, hours, socialLinks });
         } else {
             if (address) contactInfo.address = address;
             if (phone) contactInfo.phone = phone;
             if (email) contactInfo.email = email;
+            if (hours) contactInfo.hours = hours;
             if (socialLinks) contactInfo.socialLinks = socialLinks;
         }
 

@@ -4,6 +4,7 @@ const ContactSchema = new mongoose.Schema({
     address: String,
     phone: String,
     email: String,
+    hours: String,
     socialLinks: [{
         platform: { type: String, enum: ['whatsapp', 'facebook', 'instagram'] },
         url: String,
