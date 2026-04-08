@@ -31,7 +31,7 @@ router.get('/:id', async (req, res) => {
 // Create product
 router.post('/', protect, upload.single('image'), async (req, res) => {
     try {
-        const { name, price, category, categories, rating, description, inStock } = req.body;
+        const { name, price, category, categories, rating, description, inStock, sizes, colors, stockQuantity } = req.body;
         let imageUrl = '';
 
         // image from frontend can be a file upload, or a string
@@ -54,6 +54,9 @@ router.post('/', protect, upload.single('image'), async (req, res) => {
             categories: categories ? JSON.parse(categories) : [],
             rating: Number(rating) || 0,
             description,
+            sizes: sizes ? JSON.parse(sizes) : [],
+            colors: colors ? JSON.parse(colors) : [],
+            stockQuantity: Number(stockQuantity) || 0,
             inStock: inStock === 'true' || inStock === true
         });
 
@@ -68,7 +71,7 @@ router.post('/', protect, upload.single('image'), async (req, res) => {
 // Update product
 router.put('/:id', protect, upload.single('image'), async (req, res) => {
     try {
-        const { name, price, category, categories, rating, description, inStock } = req.body;
+        const { name, price, category, categories, rating, description, inStock, sizes, colors, stockQuantity } = req.body;
         const product = await Product.findById(req.params.id);
 
         if (product) {
@@ -78,6 +81,9 @@ router.put('/:id', protect, upload.single('image'), async (req, res) => {
             if (categories) product.categories = JSON.parse(categories);
             product.rating = rating ? Number(rating) : product.rating;
             product.description = description || product.description;
+            if (sizes) product.sizes = JSON.parse(sizes);
+            if (colors) product.colors = JSON.parse(colors);
+            product.stockQuantity = stockQuantity !== undefined ? Number(stockQuantity) : product.stockQuantity;
             if (inStock !== undefined) product.inStock = inStock === 'true' || inStock === true;
 
             if (req.file) {
@@ -111,6 +117,47 @@ router.delete('/:id', protect, async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+const Review = require('../models/Review');
+
+// Get reviews for a product
+router.get('/:id/reviews', async (req, res) => {
+    try {
+        const reviews = await Review.find({ productId: req.params.id }).sort({ createdAt: -1 });
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// Add a review
+router.post('/:id/reviews', protect, async (req, res) => {
+    try {
+        const { rating, comment } = req.body;
+        const product = await Product.findById(req.params.id);
+
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+
+        const review = new Review({
+            productId: req.params.id,
+            userId: req.user.id,
+            userName: req.user.displayName,
+            rating: Number(rating),
+            comment
+        });
+
+        await review.save();
+
+        // Update product rating average
+        const reviews = await Review.find({ productId: req.params.id });
+        product.rating = Number((reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length).toFixed(1));
+        await product.save();
+
+        res.status(201).json(review);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 });
 

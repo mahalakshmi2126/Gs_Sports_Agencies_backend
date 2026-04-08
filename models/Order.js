@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const OrderSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     items: [{
         id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
         name: String,
@@ -10,7 +11,9 @@ const OrderSchema = new mongoose.Schema({
         rating: Number,
         description: String,
         inStock: Boolean,
-        quantity: Number
+        quantity: Number,
+        selectedSize: String,
+        selectedColor: String
     }],
     total: { type: Number, required: true },
     customer: {
