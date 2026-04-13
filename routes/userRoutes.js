@@ -36,6 +36,13 @@ router.post('/google-login', async (req, res) => {
         if (!user) {
             user = new User({ googleId, displayName, email, profilePicture });
             await user.save();
+        } else {
+            // Update profile info if it changed
+            if (user.profilePicture !== profilePicture || user.displayName !== displayName) {
+                user.profilePicture = profilePicture;
+                user.displayName = displayName;
+                await user.save();
+            }
         }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
