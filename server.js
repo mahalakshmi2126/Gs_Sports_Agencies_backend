@@ -30,6 +30,8 @@ mongoose.connect(process.env.MONGO_URI)
         console.log('MongoDB connected ✅');
         const runSeed = require('./seed');
         runSeed(); // Automatically populates database if empty
+        require('./seedBanners'); // Trigger banner seeding
+
     })
     .catch(err => console.error('MongoDB error:', err));
 

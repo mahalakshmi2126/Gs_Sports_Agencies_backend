@@ -54,6 +54,11 @@ router.post('/google-login', async (req, res) => {
     }
 });
 
+// GET /api/user/profile
+router.get('/profile', authUser, async (req, res) => {
+    res.json(req.user);
+});
+
 // GET /api/user/cart
 router.get('/cart', authUser, async (req, res) => {
     res.json(req.user.cart);

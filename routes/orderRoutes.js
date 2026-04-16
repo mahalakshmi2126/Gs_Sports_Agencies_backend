@@ -2,6 +2,30 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const { protect } = require('../middleware/auth');
+const Razorpay = require('razorpay');
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// Create Razorpay Order
+router.post('/razorpay', async (req, res) => {
+    const { amount } = req.body;
+    try {
+        const options = {
+            amount: Math.round(amount * 100), // convert to paise
+            currency: "INR",
+            receipt: `receipt_${Date.now()}`,
+        };
+
+        const rzpOrder = await razorpay.orders.create(options);
+        res.json(rzpOrder);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error creating Razorpay order', error: error.message });
+    }
+});
 
 // Get all orders (Admin)
 router.get('/', protect, async (req, res) => {
