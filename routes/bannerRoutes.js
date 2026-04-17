@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
         const banners = await Banner.find({});
         res.json(banners);
     } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 });
 
@@ -35,7 +35,7 @@ router.post('/', protect, upload.single('image'), async (req, res) => {
         const createdBanner = await banner.save();
         res.status(201).json(createdBanner);
     } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 });
 
@@ -62,7 +62,7 @@ router.put('/:id', protect, upload.single('image'), async (req, res) => {
             res.status(404).json({ message: 'Banner not found' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 });
 
@@ -77,7 +77,7 @@ router.delete('/:id', protect, async (req, res) => {
             res.status(404).json({ message: 'Banner not found' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: 'Server Error', error: error.message });
     }
 });
 

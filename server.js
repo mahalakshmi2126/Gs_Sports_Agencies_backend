@@ -24,16 +24,33 @@ app.get('/', (req, res) => {
     res.send('GS Sports Agencies Backend is running...');
 });
 
-// ✅ Mongo connect (NO listen, NO exit)
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
+// ✅ Mongo connect (Optimized for Vercel/Serverless)
+let isConnected = false;
+const connectDB = async () => {
+    if (isConnected) return;
+    try {
+        const db = await mongoose.connect(process.env.MONGO_URI);
+        isConnected = db.connections[0].readyState;
         console.log('MongoDB connected ✅');
-        const runSeed = require('./seed');
-        runSeed(); // Automatically populates database if empty
-        require('./seedBanners'); // Trigger banner seeding
 
-    })
-    .catch(err => console.error('MongoDB error:', err));
+        // Only seed if we actually just connected
+        const Category = require('./models/Category');
+        const catCount = await Category.countDocuments();
+        if (catCount === 0) {
+            const runSeed = require('./seed');
+            await runSeed();
+            console.log('Database seeded.');
+        }
+    } catch (err) {
+        console.error('MongoDB error:', err);
+    }
+};
+
+// Middleware to ensure DB connection
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
 
 // Local Development Server (Only runs locally, Vercel ignores this)
 if (process.env.NODE_ENV !== 'production') {
