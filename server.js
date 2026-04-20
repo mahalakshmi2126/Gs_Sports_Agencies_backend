@@ -10,22 +10,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 
-// Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/user', require('./routes/userRoutes'));
-app.use('/api/products', require('./routes/productRoutes'));
-app.use('/api/categories', require('./routes/categoryRoutes'));
-app.use('/api/banners', require('./routes/bannerRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes'));
-app.use('/api/contact', require('./routes/contactRoutes'));
-app.use('/api/forms', require('./routes/formRoutes'));
-
-app.get('/', (req, res) => {
-    res.send('GS Sports Agencies Backend is running...');
-});
-
 // ✅ Mongo connect (Optimized for Vercel/Serverless)
 let cachedConnection = null;
+mongoose.set('bufferCommands', false); // Disable buffering globally
 
 const connectDB = async () => {
     if (cachedConnection && mongoose.connection.readyState === 1) {
@@ -39,10 +26,7 @@ const connectDB = async () => {
 
     try {
         console.log('Connecting to MongoDB...');
-        const opts = {
-            bufferCommands: false,
-        };
-        cachedConnection = await mongoose.connect(process.env.MONGO_URI, opts);
+        cachedConnection = await mongoose.connect(process.env.MONGO_URI);
         console.log('MongoDB connected ✅');
         return cachedConnection;
     } catch (err) {
@@ -51,7 +35,7 @@ const connectDB = async () => {
     }
 };
 
-// Middleware to ensure DB connection
+// Middleware to ensure DB connection (Must be before routes!)
 app.use(async (req, res, next) => {
     try {
         await connectDB();
@@ -64,6 +48,20 @@ app.use(async (req, res, next) => {
         });
     }
 });
+
+app.get('/', (req, res) => {
+    res.send('GS Sports Agencies Backend is running...');
+});
+
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/user', require('./routes/userRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/banners', require('./routes/bannerRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/contact', require('./routes/contactRoutes'));
+app.use('/api/forms', require('./routes/formRoutes'));
 
 // Local Development Server (Only runs locally, Vercel ignores this)
 if (process.env.NODE_ENV !== 'production') {
