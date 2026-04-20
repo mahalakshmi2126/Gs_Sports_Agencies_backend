@@ -25,32 +25,44 @@ app.get('/', (req, res) => {
 });
 
 // ✅ Mongo connect (Optimized for Vercel/Serverless)
-let isConnected = false;
+let cachedConnection = null;
+
 const connectDB = async () => {
-    if (isConnected) return;
+    if (cachedConnection && mongoose.connection.readyState === 1) {
+        return cachedConnection;
+    }
+
+    if (!process.env.MONGO_URI) {
+        console.error('MONGO_URI is missing in environment variables!');
+        throw new Error('MONGO_URI is missing');
+    }
+
     try {
         console.log('Connecting to MongoDB...');
-        const db = await mongoose.connect(process.env.MONGO_URI);
-        isConnected = db.connections[0].readyState;
+        const opts = {
+            bufferCommands: false,
+        };
+        cachedConnection = await mongoose.connect(process.env.MONGO_URI, opts);
         console.log('MongoDB connected ✅');
-
-        // Only seed if we actually just connected
-        const Category = require('./models/Category');
-        const catCount = await Category.countDocuments();
-        if (catCount === 0) {
-            const runSeed = require('./seed');
-            await runSeed();
-            console.log('Database seeded.');
-        }
+        return cachedConnection;
     } catch (err) {
-        console.error('MongoDB error:', err);
+        console.error('MongoDB connection error:', err);
+        throw err;
     }
 };
 
 // Middleware to ensure DB connection
 app.use(async (req, res, next) => {
-    await connectDB();
-    next();
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        res.status(500).json({
+            message: 'Database connection failed',
+            error: error.message,
+            tip: 'Check if MONGO_URI is set in Vercel dashboard and IP is whitelisted in Atlas.'
+        });
+    }
 });
 
 // Local Development Server (Only runs locally, Vercel ignores this)
