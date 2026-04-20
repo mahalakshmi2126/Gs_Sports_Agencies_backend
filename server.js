@@ -29,6 +29,7 @@ let isConnected = false;
 const connectDB = async () => {
     if (isConnected) return;
     try {
+        console.log('Connecting to MongoDB...');
         const db = await mongoose.connect(process.env.MONGO_URI);
         isConnected = db.connections[0].readyState;
         console.log('MongoDB connected ✅');
@@ -55,7 +56,9 @@ app.use(async (req, res, next) => {
 // Local Development Server (Only runs locally, Vercel ignores this)
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));
+    connectDB().then(() => {
+        app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));
+    });
 }
 
 // ✅ IMPORTANT for Vercel
