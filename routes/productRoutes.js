@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
 // Create product
 router.post('/', protect, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'images', maxCount: 10 }]), async (req, res) => {
     try {
-        const { name, price, category, categories, rating, description, inStock, sizes, colors, stockQuantity } = req.body;
+        const { name, price, category, categories, rating, description, inStock, sizes, colors, stockQuantity, shippingFee } = req.body;
         let imageUrl = '';
         let additionalImages = [];
 
@@ -105,7 +105,8 @@ router.post('/', protect, upload.fields([{ name: 'image', maxCount: 1 }, { name:
             sizes: sizesParsed,
             colors: colorsParsed,
             stockQuantity: Number(stockQuantity) || 0,
-            inStock: inStock === 'true' || inStock === true
+            inStock: inStock === 'true' || inStock === true,
+            shippingFee: shippingFee ? Number(shippingFee) : undefined
         });
 
         const createdProduct = await product.save();
@@ -119,7 +120,7 @@ router.post('/', protect, upload.fields([{ name: 'image', maxCount: 1 }, { name:
 // Update product
 router.put('/:id', protect, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'images', maxCount: 10 }]), async (req, res) => {
     try {
-        const { name, price, category, categories, rating, description, inStock, sizes, colors, stockQuantity, existingImages } = req.body;
+        const { name, price, category, categories, rating, description, inStock, sizes, colors, stockQuantity, existingImages, shippingFee } = req.body;
         const product = await Product.findById(req.params.id);
 
         if (product) {
@@ -154,6 +155,7 @@ router.put('/:id', protect, upload.fields([{ name: 'image', maxCount: 1 }, { nam
 
             product.stockQuantity = stockQuantity !== undefined ? Number(stockQuantity) : product.stockQuantity;
             if (inStock !== undefined) product.inStock = inStock === 'true' || inStock === true;
+            if (shippingFee !== undefined) product.shippingFee = shippingFee === '' ? undefined : Number(shippingFee);
 
             // Handle main image update
             if (req.files && req.files.image) {

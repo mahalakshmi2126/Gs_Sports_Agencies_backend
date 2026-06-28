@@ -9,7 +9,9 @@ const ContactSchema = new mongoose.Schema({
         platform: { type: String, enum: ['whatsapp', 'facebook', 'instagram'] },
         url: String,
         enabled: { type: Boolean, default: false }
-    }]
+    }],
+    isCodEnabled: { type: Boolean, default: true },
+    addonShippingFee: { type: Number, default: 49 }
 }, { timestamps: true });
 
 ContactSchema.set('toJSON', {

@@ -18,7 +18,9 @@ router.get('/', async (req, res) => {
                     { platform: "whatsapp", url: "https://wa.me/919876543210", enabled: true },
                     { platform: "instagram", url: "https://instagram.com", enabled: true },
                     { platform: "facebook", url: "https://facebook.com", enabled: true }
-                ]
+                ],
+                isCodEnabled: true,
+                addonShippingFee: 49
             };
         }
         res.json(contactInfo);
@@ -30,17 +32,19 @@ router.get('/', async (req, res) => {
 // Update contact info (Admin)
 router.put('/', protect, async (req, res) => {
     try {
-        const { address, phone, email, hours, socialLinks } = req.body;
+        const { address, phone, email, hours, socialLinks, isCodEnabled, addonShippingFee } = req.body;
         let contactInfo = await Contact.findOne({});
 
         if (!contactInfo) {
-            contactInfo = new Contact({ address, phone, email, hours, socialLinks });
+            contactInfo = new Contact({ address, phone, email, hours, socialLinks, isCodEnabled, addonShippingFee });
         } else {
             if (address) contactInfo.address = address;
             if (phone) contactInfo.phone = phone;
             if (email) contactInfo.email = email;
             if (hours) contactInfo.hours = hours;
             if (socialLinks) contactInfo.socialLinks = socialLinks;
+            if (isCodEnabled !== undefined) contactInfo.isCodEnabled = isCodEnabled;
+            if (addonShippingFee !== undefined) contactInfo.addonShippingFee = addonShippingFee;
         }
 
         const updatedContactInfo = await contactInfo.save();

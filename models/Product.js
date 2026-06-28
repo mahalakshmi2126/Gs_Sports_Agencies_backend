@@ -12,7 +12,8 @@ const ProductSchema = new mongoose.Schema({
     sizes: [{ type: String }],
     colors: [{ type: String }],
     stockQuantity: { type: Number, default: 0 },
-    inStock: { type: Boolean, default: true }
+    inStock: { type: Boolean, default: true },
+    shippingFee: { type: Number }
 }, { timestamps: true });
 
 ProductSchema.set('toJSON', {
